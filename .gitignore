@@ -72,3 +72,5 @@ log/
 *.tmp
 *.temp
 .cache/
+
+backend/credentials/

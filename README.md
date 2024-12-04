@@ -65,12 +65,6 @@ cd frontend
 npm install
 ```
 
-2. Set up environment variables:
-```bash
-cp .env.example .env.local
-# Edit .env.local with your configurations
-```
-
 ## Running the Application
 
 ### Start Backend Server

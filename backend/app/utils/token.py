@@ -22,7 +22,7 @@ def generate_interview_token(email: str, interview_time: datetime) -> str:
             "email": email,
             "time": interview_time.isoformat(),
             "type": "interview_confirmation",
-            "exp": datetime.utcnow() + timedelta(days=7)  # 7 days validity
+            "exp": datetime.now(datetime.UTC) + timedelta(days=7)  # 7 days validity
         }
         
         return jwt.encode(
