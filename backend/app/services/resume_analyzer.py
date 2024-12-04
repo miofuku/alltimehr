@@ -18,7 +18,7 @@ class ResumeAnalyzer:
             # Generate interview times (next 5 days, 3 slots per day)
             suggested_times = self._generate_interview_times()
             
-            # Send interview intivation
+            # Send interview invitation
             await self.communication_service.send_interview_invitation(
                 candidate_email=analysis["email"],
                 candidate_name=analysis["name"],
@@ -28,12 +28,12 @@ class ResumeAnalyzer:
         return analysis
     
     async def analyze(self, resume_file, cover_letter_file: Optional[str] = None):
-        # Extract text from cv 
+        # Extract text from resume
         resume_text = await self._extract_text(resume_file)
         
-        # Analyze key info
+        # Analyze key information
         analysis = {
-            "education": self._analyze_education(resume_text),  
+            "education": self._analyze_education(resume_text),
             "experience": self._analyze_experience(resume_text),
             "skills": self._analyze_skills(resume_text),
             "score": self._calculate_score(resume_text)
@@ -46,20 +46,20 @@ class ResumeAnalyzer:
         return analysis
     
     def _analyze_education(self, text):
-        # 使用NLP提取教育背景
+        # Use NLP to extract education background
         pass
         
     def _analyze_experience(self, text):
-        # 分析工作经验
+        # Analyze work experience
         pass
         
     def _analyze_skills(self, text):
-        # 提取技能关键词
+        # Extract skill keywords
         pass
         
     def _calculate_score(self, text):
-        # 根据各项分析计算总分
-        pass 
+        # Calculate total score based on analysis
+        pass
     
     def _meets_criteria(self, analysis: dict) -> bool:
         """Verify if meets requirements"""

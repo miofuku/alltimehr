@@ -5,41 +5,46 @@ from app.config import settings
 
 def generate_interview_token(email: str, interview_time: datetime) -> str:
     """
-    生成面试邀请令牌
+    Generate interview invitation token
     
     Args:
-        email: 候选人邮箱
-        interview_time: 面试时间
+        email: Candidate email
+        interview_time: Interview time
     
     Returns:
-        str: JWT令牌
-    """
-    payload = {
-        "email": email,
-        "time": interview_time.isoformat(),
-        "type": "interview_confirmation",
-        "exp": datetime.utcnow() + timedelta(days=7)  # 7天有效期
-    }
+        str: JWT token
     
-    return jwt.encode(
-        payload,
-        settings.secret_key,
-        algorithm="HS256"
-    )
+    Raises:
+        Exception: If token generation fails
+    """
+    try:
+        payload = {
+            "email": email,
+            "time": interview_time.isoformat(),
+            "type": "interview_confirmation",
+            "exp": datetime.utcnow() + timedelta(days=7)  # 7 days validity
+        }
+        
+        return jwt.encode(
+            payload,
+            settings.secret_key,
+            algorithm="HS256"
+        )
+    except Exception as e:
+        raise Exception(f"Failed to generate token: {str(e)}")
 
 def decode_interview_token(token: str) -> dict:
     """
-    解码面试邀请令牌
+    Decode interview invitation token
     
     Args:
-        token: JWT令牌
+        token: JWT token
     
     Returns:
-        dict: 包含邮箱和面试时间的字典
+        dict: Dictionary containing email and interview time
     
     Raises:
-        jwt.InvalidTokenError: 令牌无效
-        jwt.ExpiredSignatureError: 令牌过期
+        HTTPException: If token is invalid or expired
     """
     try:
         payload = jwt.decode(
@@ -55,8 +60,18 @@ def decode_interview_token(token: str) -> dict:
             "email": payload["email"],
             "time": datetime.fromisoformat(payload["time"])
         }
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=401,
+            detail="Token has expired"
+        )
     except jwt.InvalidTokenError as e:
         raise HTTPException(
             status_code=400,
-            detail="Invalid or expired token"
-        ) from e 
+            detail=f"Invalid token: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Token processing error: {str(e)}"
+        )

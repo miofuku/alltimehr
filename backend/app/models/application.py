@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 class Education(BaseModel):
+    """Education history model"""
     school: str
     degree: str
     major: str
@@ -10,6 +11,7 @@ class Education(BaseModel):
     end_date: Optional[datetime]
 
 class Experience(BaseModel):
+    """Work experience model"""
     company: str
     position: str
     start_date: datetime
@@ -17,6 +19,7 @@ class Experience(BaseModel):
     description: str
 
 class Application(BaseModel):
+    """Job application model"""
     id: str
     candidate_name: str
     email: str

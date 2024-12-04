@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import { Upload, Form, Input, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import type { UploadFile } from 'antd/es/upload/interface';
 
 interface ApplicationFormProps {
-  onSubmit: (values: any) => void;
+  onSubmit: (values: ApplicationData) => void;
+}
+
+interface ApplicationData {
+  resume: UploadFile[];
+  coverLetter?: UploadFile[];
 }
 
 const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: ApplicationData) => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('resume', values.resume[0].originFileObj);
-      if (values.coverLetter) {
-        formData.append('cover_letter', values.coverLetter[0].originFileObj);
+      formData.append('resume', values.resume[0].originFileObj as Blob);
+      if (values.coverLetter?.[0]) {
+        formData.append('cover_letter', values.coverLetter[0].originFileObj as Blob);
       }
       
       const response = await fetch('/api/applications', {
@@ -25,10 +31,10 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
       });
       
       const result = await response.json();
-      message.success('申请提交成功！');
+      message.success('Application submitted successfully!');
       onSubmit(result);
     } catch (error) {
-      message.error('提交失败，请重试');
+      message.error('Submission failed, please try again');
     } finally {
       setLoading(false);
     }
@@ -38,23 +44,23 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
     <Form form={form} onFinish={handleSubmit}>
       <Form.Item
         name="resume"
-        label="简历"
-        rules={[{ required: true, message: '请上传简历' }]}
+        label="Resume"
+        rules={[{ required: true, message: 'Please upload your resume' }]}
       >
         <Upload accept=".pdf,.doc,.docx">
-          <Button icon={<UploadOutlined />}>上传简历</Button>
+          <Button icon={<UploadOutlined />}>Upload Resume</Button>
         </Upload>
       </Form.Item>
 
-      <Form.Item name="coverLetter" label="求职信">
+      <Form.Item name="coverLetter" label="Cover Letter">
         <Upload accept=".pdf,.doc,.docx">
-          <Button icon={<UploadOutlined />}>上传求职信（可选）</Button>
+          <Button icon={<UploadOutlined />}>Upload Cover Letter (Optional)</Button>
         </Upload>
       </Form.Item>
 
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading}>
-          提交申请
+          Submit Application
         </Button>
       </Form.Item>
     </Form>

@@ -21,13 +21,13 @@ class CommunicationService:
         candidate_name: str,
         suggested_times: List[datetime]
     ) -> bool:
-        """发送面试邀请邮件"""
+        """Send interview invitation email"""
         message = MIMEMultipart()
         message["From"] = self.smtp_settings.username
         message["To"] = candidate_email
-        message["Subject"] = "面试邀请 - 请确认您的面试时间"
+        message["Subject"] = "Interview Invitation - Please Confirm Your Interview Time"
         
-        # 生成时间选择的HTML表格
+        # Generate HTML table for time selection
         time_options = "\n".join([
             f"<tr><td><a href='{self._generate_confirmation_link(t)}'>"
             f"{t.strftime('%Y-%m-%d %H:%M')}</a></td></tr>"
@@ -37,12 +37,12 @@ class CommunicationService:
         body = f"""
         <html>
             <body>
-                <p>尊敬的 {candidate_name}：</p>
-                <p>感谢您的申请。我们很高兴地通知您已通过初步筛选。</p>
-                <p>请从以下时间段中选择一个适合您的面试时间：</p>
+                <p>Dear {candidate_name},</p>
+                <p>Thank you for your application. We are pleased to inform you that you have passed the initial screening.</p>
+                <p>Please select a suitable interview time from the following options:</p>
                 <table>{time_options}</table>
-                <p>点击时间即可确认。</p>
-                <p>祝好，<br>HR团队</p>
+                <p>Click on the time to confirm.</p>
+                <p>Best regards,<br>HR Team</p>
             </body>
         </html>
         """
@@ -62,7 +62,7 @@ class CommunicationService:
                 await smtp.send_message(message)
             return True
         except Exception as e:
-            print(f"发送邮件失败: {e}")
+            print(f"Failed to send email: {e}")
             return False
             
     async def schedule_interview(
@@ -71,13 +71,13 @@ class CommunicationService:
         interview_time: datetime,
         duration_minutes: int = 60
     ) -> Optional[str]:
-        """在Google Calendar中安排面试"""
+        """Schedule interview in Google Calendar"""
         try:
             service = build('calendar', 'v3', credentials=self.calendar_creds)
             
             event = {
-                'summary': f'面试 - {candidate_email}',
-                'description': '视频面试',
+                'summary': f'Interview - {candidate_email}',
+                'description': 'Video Interview',
                 'start': {
                     'dateTime': interview_time.isoformat(),
                     'timeZone': 'Asia/Shanghai',
@@ -105,11 +105,11 @@ class CommunicationService:
             
             return event.get('id')
         except Exception as e:
-            print(f"安排面试失败: {e}")
+            print(f"Failed to schedule interview: {e}")
             return None
             
     def _generate_confirmation_link(self, time: datetime) -> str:
-        """生成确认链接"""
+        """Generate confirmation link"""
         token = generate_interview_token(
             email=self.candidate_email,
             interview_time=time

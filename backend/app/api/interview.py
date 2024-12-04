@@ -8,12 +8,12 @@ comm_service = CommunicationService()
 
 @router.post("/confirm/{interview_token}")
 async def confirm_interview(interview_token: str):
-    """确认面试时间"""
+    """Confirm interview time"""
     try:
-        # 解析token获取信息
+        # Parse token to get information
         interview_info = decode_interview_token(interview_token)
         
-        # 在日历中安排面试
+        # Schedule interview in calendar
         event_id = await comm_service.schedule_interview(
             candidate_email=interview_info["email"],
             interview_time=interview_info["time"]
@@ -22,11 +22,11 @@ async def confirm_interview(interview_token: str):
         if not event_id:
             raise HTTPException(
                 status_code=500,
-                detail="无法安排面试"
+                detail="Unable to schedule interview"
             )
             
         return {
-            "message": "面试已确认",
+            "message": "Interview confirmed",
             "event_id": event_id
         }
     except Exception as e:
