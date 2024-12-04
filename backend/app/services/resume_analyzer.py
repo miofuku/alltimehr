@@ -3,6 +3,7 @@ import spacy
 from transformers import pipeline
 from datetime import datetime, timedelta
 from app.services.communication_service import CommunicationService
+from app.utils.file import extract_text_from_file
 
 class ResumeAnalyzer:
     def __init__(self):
@@ -28,8 +29,10 @@ class ResumeAnalyzer:
         return analysis
     
     async def analyze(self, resume_file, cover_letter_file: Optional[str] = None):
-        # Extract text from resume
-        resume_text = await self._extract_text(resume_file)
+        # Extract text from resume using file utils
+        resume_text = await extract_text_from_file(resume_file)
+        if not resume_text:
+            raise ValueError("Could not extract text from resume")
         
         # Analyze key information
         analysis = {
@@ -40,8 +43,9 @@ class ResumeAnalyzer:
         }
         
         if cover_letter_file:
-            cover_letter_text = await self._extract_text(cover_letter_file)
-            analysis["cover_letter_score"] = self._analyze_cover_letter(cover_letter_text)
+            cover_letter_text = await extract_text_from_file(cover_letter_file)
+            if cover_letter_text:
+                analysis["cover_letter_score"] = self._analyze_cover_letter(cover_letter_text)
             
         return analysis
     

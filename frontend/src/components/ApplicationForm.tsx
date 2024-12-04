@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Upload, Form, Input, Button, message } from 'antd';
+import { Upload, Form, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
+import api from '../utils/api';
 
 interface ApplicationFormProps {
   onSubmit: (values: ApplicationData) => void;
@@ -25,14 +26,14 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSubmit }) => {
         formData.append('cover_letter', values.coverLetter[0].originFileObj as Blob);
       }
       
-      const response = await fetch('/api/applications', {
-        method: 'POST',
-        body: formData,
+      const { data } = await api.post('/api/applications', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       
-      const result = await response.json();
       message.success('Application submitted successfully!');
-      onSubmit(result);
+      onSubmit(data);
     } catch (error) {
       message.error('Submission failed, please try again');
     } finally {
