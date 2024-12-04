@@ -1,77 +1,119 @@
 # AI HR Agent
 
-一个基于AI的自动化HR系统，用于简历筛选和面试管理。
+An AI-powered HR system for resume screening and interview management.
 
+## Features
 
-## 功能特性
+- Automatic resume parsing and analysis
+- Smart scoring system
+- Education background analysis
+- Work experience evaluation
+- Skills matching
+- Cover letter evaluation (optional)
+- Automated interview scheduling
+- Email notifications
+- Calendar integration
 
-- 自动简历解析和分析
-- 智能评分系统
-- 教育背景分析
-- 工作经验评估
-- 技能匹配度分析
-- 求职信评估（可选）
+## Prerequisites
 
-## 技术栈
-
-### 后端
 - Python 3.8+
-- FastAPI
-- SpaCy
-- Transformers
-- Pydantic
+- Node.js 16+
+- PostgreSQL 12+
+- Google Calendar API credentials
+- SMTP server access
 
-### 前端
-- React
-- TypeScript
-- Ant Design
-- Axios
+## Setup
 
-## 安装说明
+### Backend Setup
 
-1. 克隆仓库
-```
-git clone https://github.com/miofuku/alltimehr.git
-cd alltimehr
-```
-
-2. 安装后端依赖
-```
+1. Create and activate virtual environment:
+```bash
 cd backend
 python -m venv venv
-source venv/bin/activate # Windows使用: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+2. Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
 
-3. 安装前端依赖
+3. Install Spacy model:
+```bash
+python -m spacy download en_core_web_lg
 ```
+
+4. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configurations
+```
+
+5. Set up Google Calendar credentials:
+   - Go to Google Cloud Console
+   - Create a new project
+   - Enable Google Calendar API
+   - Create credentials (OAuth 2.0)
+   - Download credentials and save as `credentials.json`
+   - Update `GOOGLE_CALENDAR_CREDS_FILE` in `.env`
+
+### Frontend Setup
+
+1. Install dependencies:
+```bash
 cd frontend
 npm install
 ```
 
-## 运行项目
-
-1. 启动后端服务
+2. Set up environment variables:
+```bash
+cp .env.example .env.local
+# Edit .env.local with your configurations
 ```
+
+## Running the Application
+
+### Start Backend Server
+
+```bash
 cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 uvicorn main:app --reload
 ```
 
-2. 启动前端开发服务器
-```
+The backend will be available at `http://localhost:8000`
+
+### Start Frontend Development Server
+
+```bash
 cd frontend
 npm start
 ```
 
-## API文档
+The frontend will be available at `http://localhost:3000`
 
-启动后端服务后，访问 http://localhost:8000/docs 查看API文档。
+## API Documentation
 
-## 配置说明
+Once the backend is running, visit:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
-1. 后端配置在 `backend/app/config.py`
-2. 前端配置在 `frontend/src/config.ts`
+## Development
 
-## 许可证
+### Backend Development
+
+- API endpoints are in `backend/app/api/`
+- Data models are in `backend/app/models/`
+- Business logic is in `backend/app/services/`
+- Utility functions are in `backend/app/utils/`
+
+### Frontend Development
+
+- Components are in `frontend/src/components/`
+- Pages are in `frontend/src/pages/`
+- Utility functions are in `frontend/src/utils/`
+
+
+## License
 
 MIT License
