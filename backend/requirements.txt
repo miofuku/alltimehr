@@ -1,2 +1,37 @@
-spacy
-transformers
+# Web框架
+fastapi>=0.68.0
+uvicorn>=0.15.0
+python-multipart>=0.0.5
+pydantic>=1.8.2
+
+# 数据库
+sqlalchemy>=1.4.23
+alembic>=1.7.1
+psycopg2-binary>=2.9.1
+
+# AI/ML
+spacy>=3.1.0
+transformers>=4.11.0
+torch>=1.9.0
+pytesseract>=0.3.8
+python-docx>=0.8.11
+pdfminer.six>=20201018
+
+# 工具
+python-jose>=3.3.0
+passlib>=1.7.4
+python-dotenv>=0.19.0
+aiofiles>=0.7.0
+requests>=2.26.0
+
+# 测试
+pytest>=6.2.5
+pytest-asyncio>=0.15.1
+httpx>=0.19.0
+
+# 日志和监控
+loguru>=0.5.3
+prometheus-client>=0.11.0
+
+# 在安装spacy模型之前，需要运行:
+# python -m spacy download en_core_web_lg
