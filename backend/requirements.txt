@@ -14,7 +14,7 @@ spacy==3.7.4
 transformers==4.37.2
 tokenizers==0.15.2
 torch==2.1.2
-numpy==1.21.6
+numpy==1.22.0
 pytesseract==0.3.8
 python-docx==0.8.11
 pdfminer.six==20201018
