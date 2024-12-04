@@ -1,11 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from app.api import interview
 from app.services.resume_analyzer import ResumeAnalyzer
-from app.models.application import Application
 
 app = FastAPI()
 
-# 配置CORS
+# Config CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,13 +14,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Create ResumeAnalyzer instance
+resume_analyzer = ResumeAnalyzer()
+
 @app.post("/api/applications")
 async def submit_application(
     resume: UploadFile = File(...),
     cover_letter: UploadFile = None
 ):
-    # 处理申请材料
-    analyzer = ResumeAnalyzer()
-    analysis_result = await analyzer.analyze(resume, cover_letter)
+    """
+    Process application materials
+    - analyze cv and cover letter
+    - if requirements are fulfilled, send out invitation
+    - return analysis result
+    """
+    analysis_result = await resume_analyzer.analyze_and_process(
+        resume,
+        cover_letter
+    )
     
-    return analysis_result 
+    return analysis_result
+
+# interview route
+app.include_router(interview.router, prefix="/api/interview")
