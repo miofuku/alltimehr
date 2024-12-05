@@ -1,17 +1,21 @@
 from typing import Optional, List
 from datetime import datetime, timedelta
 from langchain.agents import initialize_agent, Tool, AgentType
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
-from langchain.document_loaders import PyPDFLoader, Docx2txtLoader
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.services.communication_service import CommunicationService
+from app.config import settings
 from app.config.job_requirements import JobRequirements
 
 class HRAgent:
     def __init__(self):
-        # Initialize LLM
-        self.llm = ChatOpenAI(temperature=0)
+        # Initialize LLM with API key from settings
+        self.llm = ChatOpenAI(
+            temperature=0,
+            openai_api_key=settings.openai_api_key
+        )
         
         # Get job requirements
         self.requirements = JobRequirements.get_all_requirements()

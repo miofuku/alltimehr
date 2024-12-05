@@ -36,10 +36,11 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      // Handle token refresh here if needed
+    
+    if (error.response?.status === 500) {
+      console.error('Server error:', error.response.data);
     }
+    
     return Promise.reject(error);
   }
 );

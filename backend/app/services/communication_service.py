@@ -73,6 +73,10 @@ class CommunicationService:
         duration_minutes: int = 60
     ) -> Optional[str]:
         """Schedule interview in Google Calendar"""
+        if not self.calendar_creds:
+            print("Warning: Google Calendar credentials not available")
+            return None
+            
         try:
             service = build('calendar', 'v3', credentials=self.calendar_creds)
             
