@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     google_calendar_creds_file: str
     min_score_threshold: float = 0.7
     secret_key: str
+    openai_api_key: str
     
     class Config:
         env_file = ".env" 
