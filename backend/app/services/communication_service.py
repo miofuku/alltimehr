@@ -6,7 +6,6 @@ from email.mime.multipart import MIMEMultipart
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from app.config import settings
-from app.models.application import Application
 from app.utils.token import generate_interview_token
 import time
 
@@ -14,6 +13,7 @@ class CommunicationService:
     def __init__(self):
         self.smtp_settings = settings.smtp
         self.calendar_creds = settings.google_calendar_creds
+        self.candidate_email = None  # Will be set when sending invitation
         
     async def send_interview_invitation(
         self, 
@@ -22,6 +22,7 @@ class CommunicationService:
         suggested_times: List[datetime]
     ) -> bool:
         """Send interview invitation email"""
+        self.candidate_email = candidate_email  # Set the email for generating confirmation links
         message = MIMEMultipart()
         message["From"] = self.smtp_settings.username
         message["To"] = candidate_email

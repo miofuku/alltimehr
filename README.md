@@ -4,21 +4,20 @@ An AI-powered HR system for resume screening and interview management.
 
 ## Features
 
-- Automatic resume parsing and analysis
-- Smart scoring system
-- Education background analysis
-- Work experience evaluation
-- Skills matching
-- Cover letter evaluation (optional)
+- Intelligent resume parsing and analysis using LangChain
+- Smart scoring system with skills matching
+- Education and experience evaluation
 - Automated interview scheduling
 - Email notifications
-- Calendar integration
+- Calendar integration with Google Calendar
+- Video interview setup
 
 ## Prerequisites
 
 - Python 3.8+
 - Node.js 16+
 - PostgreSQL 12+
+- OpenAI API key
 - Google Calendar API credentials
 - SMTP server access
 
@@ -38,23 +37,21 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Install Spacy model:
-```bash
-python -m spacy download en_core_web_lg
-```
-
-4. Set up environment variables:
+3. Set up environment variables:
 ```bash
 cp .env.example .env
-# Edit .env with your configurations
+# Edit .env with your configurations:
+# - Add your OpenAI API key
+# - Configure SMTP settings
+# - Set up secret key (use: python -c "import secrets; print(secrets.token_hex(32))")
 ```
 
-5. Set up Google Calendar credentials:
+4. Set up Google Calendar credentials:
    - Go to Google Cloud Console
    - Create a new project
    - Enable Google Calendar API
    - Create credentials (OAuth 2.0)
-   - Download credentials and save as `credentials.json`
+   - Download credentials and save as `credentials.json` in `backend/credentials/`
    - Update `GOOGLE_CALENDAR_CREDS_FILE` in `.env`
 
 ### Frontend Setup
@@ -63,6 +60,12 @@ cp .env.example .env
 ```bash
 cd frontend
 npm install
+```
+
+2. Set up environment variables:
+```bash
+cp .env.example .env.local
+# Configure your environment variables
 ```
 
 ## Running the Application
@@ -92,21 +95,35 @@ Once the backend is running, visit:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-## Development
+## Key Features Implementation
 
-### Backend Development
+### Resume Analysis
+- Uses LangChain for intelligent document processing
+- Extracts and analyzes:
+  - Education history
+  - Work experience
+  - Technical skills
+  - Soft skills
+  - Overall assessment
 
-- API endpoints are in `backend/app/api/`
-- Data models are in `backend/app/models/`
-- Business logic is in `backend/app/services/`
-- Utility functions are in `backend/app/utils/`
+### Skills Matching
+- Compares candidate skills with requirements
+- Calculates match score
+- Identifies missing critical skills
+- Provides hiring recommendations
 
-### Frontend Development
+### Interview Scheduling
+- Automated email invitations
+- Multiple time slot options
+- Google Calendar integration
+- Automatic video meeting setup
 
-- Components are in `frontend/src/components/`
-- Pages are in `frontend/src/pages/`
-- Utility functions are in `frontend/src/utils/`
+## Security
 
+- JWT for secure interview confirmations
+- Environment-based configuration
+- CORS protection
+- Input validation and sanitization
 
 ## License
 

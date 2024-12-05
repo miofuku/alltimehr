@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime
 from app.services.communication_service import CommunicationService
 from app.utils.token import decode_interview_token
 
@@ -8,12 +7,12 @@ comm_service = CommunicationService()
 
 @router.post("/confirm/{interview_token}")
 async def confirm_interview(interview_token: str):
-    """Confirm interview time"""
+    """Confirm interview time and schedule in calendar"""
     try:
-        # Parse token to get information
+        # Decode and validate token
         interview_info = decode_interview_token(interview_token)
         
-        # Schedule interview in calendar
+        # Schedule interview with video meeting
         event_id = await comm_service.schedule_interview(
             candidate_email=interview_info["email"],
             interview_time=interview_info["time"]
@@ -22,13 +21,16 @@ async def confirm_interview(interview_token: str):
         if not event_id:
             raise HTTPException(
                 status_code=500,
-                detail="Unable to schedule interview"
+                detail="Failed to schedule interview"
             )
             
         return {
-            "message": "Interview confirmed",
-            "event_id": event_id
+            "status": "success",
+            "message": "Interview scheduled successfully",
+            "event_id": event_id,
+            "time": interview_info["time"].isoformat()
         }
+        
     except Exception as e:
         raise HTTPException(
             status_code=400,

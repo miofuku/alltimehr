@@ -6,7 +6,6 @@ from langchain.prompts import PromptTemplate
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.services.communication_service import CommunicationService
-from app.utils.file import extract_text_from_file
 
 class ResumeAnalyzer:
     def __init__(self):
