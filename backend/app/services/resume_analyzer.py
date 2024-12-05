@@ -96,7 +96,6 @@ class HRAgent:
             self.evaluate_candidate,
             self.schedule_interview
         ]
-        tool_executor = ToolExecutor(tools)
 
         # Create workflow graph
         workflow = StateGraph(AgentState)

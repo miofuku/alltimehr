@@ -4,7 +4,7 @@ An AI-powered HR system for resume screening and interview management.
 
 ## Features
 
-- Intelligent resume parsing and analysis using LangChain
+- Intelligent resume parsing and analysis using LangGraph
 - Smart scoring system with skills matching
 - Education and experience evaluation
 - Automated interview scheduling
@@ -61,7 +61,6 @@ cp .env.example .env
 cd frontend
 npm install
 ```
-
 2. Set up environment variables:
 ```bash
 cp .env.example .env.local
@@ -95,35 +94,19 @@ Once the backend is running, visit:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-## Key Features Implementation
+## Development
 
-### Resume Analysis
-- Uses LangChain for intelligent document processing
-- Extracts and analyzes:
-  - Education history
-  - Work experience
-  - Technical skills
-  - Soft skills
-  - Overall assessment
+### Backend Development
 
-### Skills Matching
-- Compares candidate skills with requirements
-- Calculates match score
-- Identifies missing critical skills
-- Provides hiring recommendations
+- API endpoints are in `backend/app/api/`
+- Data models are in `backend/app/models/`
+- Business logic is in `backend/app/services/`
+- Utility functions are in `backend/app/utils/`
 
-### Interview Scheduling
-- Automated email invitations
-- Multiple time slot options
-- Google Calendar integration
-- Automatic video meeting setup
+### Frontend Development
 
-## Security
-
-- JWT for secure interview confirmations
-- Environment-based configuration
-- CORS protection
-- Input validation and sanitization
+- Components are in `frontend/src/components/`
+- Utility functions are in `frontend/src/utils/`
 
 ## License
 
