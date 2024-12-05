@@ -1,160 +1,156 @@
 from typing import Optional, List
 from datetime import datetime, timedelta
-from langchain.llms import OpenAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+from langchain.agents import initialize_agent, Tool, AgentType
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.services.communication_service import CommunicationService
 
-class ResumeAnalyzer:
+class HRAgent:
     def __init__(self):
-        # Initialize LangChain components
-        self.llm = OpenAI(temperature=0)
+        # Initialize LLM
+        self.llm = ChatOpenAI(temperature=0)
         
-        # Resume analysis prompt
-        self.resume_prompt = PromptTemplate(
-            input_variables=["resume_text"],
-            template="""
-            Analyze the following resume and extract key information:
-            {resume_text}
-            
-            Please provide:
-            1. Education history (degree, school, dates)
-            2. Work experience (company, role, dates, key achievements)
-            3. Skills (technical and soft skills)
-            4. Overall assessment score (0-1)
-            5. Key strengths
-            6. Potential areas of concern
-            
-            Format the response as JSON.
-            """
+        # Initialize memory
+        self.memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True
         )
         
-        self.resume_chain = LLMChain(
+        # Define tools
+        self.tools = [
+            Tool(
+                name="analyze_resume",
+                func=self._analyze_resume,
+                description="Analyzes a resume document and extracts key information"
+            ),
+            Tool(
+                name="evaluate_skills",
+                func=self._evaluate_skills,
+                description="Evaluates candidate's skills against job requirements"
+            ),
+            Tool(
+                name="schedule_interview",
+                func=self._schedule_interview,
+                description="Schedules an interview if candidate meets requirements"
+            )
+        ]
+        
+        # Initialize agent
+        self.agent = initialize_agent(
+            tools=self.tools,
             llm=self.llm,
-            prompt=self.resume_prompt
-        )
-        
-        # Skills matching prompt
-        self.skills_prompt = PromptTemplate(
-            input_variables=["required_skills", "candidate_skills"],
-            template="""
-            Compare the required skills with candidate's skills:
-            Required: {required_skills}
-            Candidate: {candidate_skills}
-            
-            Provide:
-            1. Match score (0-1)
-            2. Missing critical skills
-            3. Additional relevant skills
-            4. Recommendation (proceed/reject)
-            
-            Format as JSON.
-            """
-        )
-        
-        self.skills_chain = LLMChain(
-            llm=self.llm,
-            prompt=self.skills_prompt
+            agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+            memory=self.memory,
+            verbose=True
         )
         
         self.communication_service = CommunicationService()
-        
-    async def analyze_and_process(self, resume_file, cover_letter_file: Optional[str] = None):
-        analysis = await self.analyze(resume_file, cover_letter_file)
-        
-        if self._meets_criteria(analysis):
-            suggested_times = self._generate_interview_times()
+
+    async def process_application(self, resume_file, cover_letter_file: Optional[str] = None):
+        """Process a job application"""
+        try:
+            # Load document
+            file_ext = resume_file.filename.lower().split('.')[-1]
+            loader = PyPDFLoader(resume_file.file) if file_ext == 'pdf' else Docx2txtLoader(resume_file.file)
+            documents = loader.load()
             
-            await self.communication_service.send_interview_invitation(
-                candidate_email=analysis["email"],
-                candidate_name=analysis["name"],
+            # Split text
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=2000,
+                chunk_overlap=200
+            )
+            texts = text_splitter.split_documents(documents)
+            resume_text = "\n".join([t.page_content for t in texts])
+            
+            # Let agent analyze and make decisions
+            result = await self.agent.arun(
+                f"""Process this job application:
+                Resume: {resume_text}
+                Cover Letter: {cover_letter_file if cover_letter_file else 'Not provided'}
+                
+                Follow these steps:
+                1. Analyze the resume
+                2. Evaluate skills against requirements
+                3. If candidate meets requirements, schedule an interview
+                4. Provide a detailed assessment report
+                """
+            )
+            
+            return result
+            
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Failed to process application: {str(e)}"
+            }
+
+    def _analyze_resume(self, text: str) -> dict:
+        """Tool: Resume Analysis"""
+        try:
+            analysis = self.llm.predict(
+                f"""Analyze this resume and extract key information:
+                {text}
+                
+                Provide:
+                1. Education history
+                2. Work experience
+                3. Skills
+                4. Overall assessment
+                
+                Format as JSON.
+                """
+            )
+            return analysis
+        except Exception as e:
+            return {"error": f"Resume analysis failed: {str(e)}"}
+
+    def _evaluate_skills(self, skills: List[str]) -> dict:
+        """Tool: Skills Evaluation"""
+        required_skills = {
+            "must_have": ["Python", "React"],
+            "preferred": ["TypeScript", "FastAPI", "SQL", "Git"]
+        }
+        
+        try:
+            evaluation = self.llm.predict(
+                f"""Evaluate these skills against our requirements:
+                Candidate skills: {skills}
+                Required skills: {required_skills}
+                
+                Provide:
+                1. Skills match score (0-1)
+                2. Missing critical skills
+                3. Recommendation (proceed/reject)
+                
+                Format as JSON.
+                """
+            )
+            return evaluation
+        except Exception as e:
+            return {"error": f"Skills evaluation failed: {str(e)}"}
+
+    async def _schedule_interview(self, candidate_info: dict) -> dict:
+        """Tool: Interview Scheduling"""
+        try:
+            # Generate interview slots
+            suggested_times = [
+                datetime.now() + timedelta(days=i, hours=10)
+                for i in range(1, 6)
+            ]
+            
+            # Send invitation
+            success = await self.communication_service.send_interview_invitation(
+                candidate_email=candidate_info["email"],
+                candidate_name=candidate_info["name"],
                 suggested_times=suggested_times
             )
             
-        return analysis
-    
-    async def analyze(self, resume_file, cover_letter_file: Optional[str] = None):
-        # Load and process document
-        file_ext = resume_file.filename.lower().split('.')[-1]
-        if file_ext == 'pdf':
-            loader = PyPDFLoader(resume_file.file)
-        else:
-            loader = Docx2txtLoader(resume_file.file)
-            
-        documents = loader.load()
-        
-        # Split text into manageable chunks
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000,
-            chunk_overlap=200
-        )
-        texts = text_splitter.split_documents(documents)
-        
-        # Analyze resume content
-        resume_analysis = await self.resume_chain.arun(
-            resume_text="\n".join([t.page_content for t in texts])
-        )
-        
-        # Extract skills and compare with requirements
-        skills_analysis = await self.skills_chain.arun(
-            required_skills=self.get_required_skills(),
-            candidate_skills=resume_analysis["skills"]
-        )
-        
-        # Combine analyses
-        analysis = {
-            **resume_analysis,
-            "skills_match": skills_analysis,
-            "overall_score": (
-                resume_analysis["score"] * 0.6 +
-                skills_analysis["match_score"] * 0.4
-            )
-        }
-        
-        if cover_letter_file:
-            analysis["cover_letter_score"] = await self._analyze_cover_letter(
-                cover_letter_file
-            )
-            
-        return analysis
-    
-    def get_required_skills(self) -> List[str]:
-        """Get required skills for the position"""
-        return [
-            "Python",
-            "React",
-            "TypeScript",
-            "FastAPI",
-            "SQL",
-            "Git"
-        ]
-    
-    def _meets_criteria(self, analysis: dict) -> bool:
-        """Check if candidate meets requirements"""
-        return (
-            analysis["overall_score"] >= 0.7 and
-            analysis["skills_match"]["recommendation"] == "proceed" and
-            not any(
-                skill in analysis["skills_match"]["missing_critical_skills"]
-                for skill in ["Python", "React"]  # Must-have skills
-            )
-        )
-    
-    def _generate_interview_times(self) -> List[datetime]:
-        """Generate interview times"""
-        times = []
-        current = datetime.now() + timedelta(days=1)
-        
-        for _ in range(5):  # next 5 workdays
-            if current.weekday() < 5:  # Mon - Fri
-                # Morning, midday, afternoon
-                times.extend([
-                    current.replace(hour=10, minute=0),
-                    current.replace(hour=14, minute=0),
-                    current.replace(hour=16, minute=0)
-                ])
-            current += timedelta(days=1)
-            
-        return times
+            return {
+                "status": "success" if success else "error",
+                "message": "Interview invitation sent" if success else "Failed to send invitation",
+                "suggested_times": [t.isoformat() for t in suggested_times]
+            }
+        except Exception as e:
+            return {"error": f"Interview scheduling failed: {str(e)}"}

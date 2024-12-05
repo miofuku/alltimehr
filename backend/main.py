@@ -1,11 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import interview
-from app.services.resume_analyzer import ResumeAnalyzer
+from app.services.resume_analyzer import HRAgent
 
 app = FastAPI()
 
-# Config CORS
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,8 +14,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create ResumeAnalyzer instance
-resume_analyzer = ResumeAnalyzer()
+# Initialize HR Agent
+hr_agent = HRAgent()
 
 @app.post("/api/applications")
 async def submit_application(
@@ -23,17 +23,13 @@ async def submit_application(
     cover_letter: UploadFile = None
 ):
     """
-    Process application materials
-    - analyze cv and cover letter
-    - if requirements are fulfilled, send out invitation
-    - return analysis result
+    Process job application using HR Agent
+    - Analyzes resume and cover letter
+    - Makes hiring decisions
+    - Schedules interviews if appropriate
     """
-    analysis_result = await resume_analyzer.analyze_and_process(
-        resume,
-        cover_letter
-    )
-    
-    return analysis_result
+    result = await hr_agent.process_application(resume, cover_letter)
+    return result
 
-# interview route
+# Include interview routes
 app.include_router(interview.router, prefix="/api/interview")
