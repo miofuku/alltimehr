@@ -6,11 +6,15 @@ from langchain.memory import ConversationBufferMemory
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.services.communication_service import CommunicationService
+from app.config.job_requirements import JobRequirements
 
 class HRAgent:
     def __init__(self):
         # Initialize LLM
         self.llm = ChatOpenAI(temperature=0)
+        
+        # Get job requirements
+        self.requirements = JobRequirements.get_all_requirements()
         
         # Initialize memory
         self.memory = ConversationBufferMemory(
@@ -108,21 +112,20 @@ class HRAgent:
 
     def _evaluate_skills(self, skills: List[str]) -> dict:
         """Tool: Skills Evaluation"""
-        required_skills = {
-            "must_have": ["Python", "React"],
-            "preferred": ["TypeScript", "FastAPI", "SQL", "Git"]
-        }
-        
         try:
             evaluation = self.llm.predict(
                 f"""Evaluate these skills against our requirements:
                 Candidate skills: {skills}
-                Required skills: {required_skills}
+                Required skills: {self.requirements['technical_skills']['must_have']}
+                Preferred skills: {self.requirements['technical_skills']['preferred']}
+                Required experience: {self.requirements['experience']}
                 
                 Provide:
                 1. Skills match score (0-1)
-                2. Missing critical skills
-                3. Recommendation (proceed/reject)
+                2. Missing critical (must-have) skills
+                3. Missing preferred skills
+                4. Experience assessment
+                5. Recommendation (proceed/reject)
                 
                 Format as JSON.
                 """
